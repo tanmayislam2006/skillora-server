@@ -58,7 +58,9 @@ async function run() {
     app.get("/purchaseService/:uid", async (req, res) => {
       const uid = req.params.uid;
       const query = { uid: uid };
-      const purchaseServices = await purchaseServicesCollection.find(query).toArray();
+      const purchaseServices = await purchaseServicesCollection
+        .find(query)
+        .toArray();
       res.send(purchaseServices);
     });
     // get a user added service by user uid
@@ -92,6 +94,19 @@ async function run() {
     app.post("/addService", async (req, res) => {
       const service = req.body;
       const result = await servicesCollection.insertOne(service);
+      res.send(result);
+    });
+    // ?update service
+    app.put("/updateService/:id", async (req, res) => {
+      const id = req.params.id;
+      const service = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          ...service,
+        },
+      };
+      const result = await servicesCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
     // update user login information
