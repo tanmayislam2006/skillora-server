@@ -40,7 +40,16 @@ async function run() {
       const allServices = await servicesCollection.find(query).toArray();
       res.send(allServices);
     });
-
+    // get single id
+    app.get("/service/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const service = await servicesCollection.findOne(query);
+      if (!service) {
+        return res.status(404).send({ message: "Service not found", service: null });
+      }
+      res.send(service);
+    });
     // register user
     app.post("/register", async (req, res) => {
       const userInformation = req.body;
