@@ -61,6 +61,13 @@ async function run() {
       const purchaseServices = await purchaseServicesCollection.find(query).toArray();
       res.send(purchaseServices);
     });
+    // get a user added service by user uid
+    app.get("/userService/:uid", async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid: uid };
+      const userServices = await servicesCollection.find(query).toArray();
+      res.send(userServices);
+    });
     // all purchaseServices by user
     app.post("/purchaseServices", async (req, res) => {
       const purchaseService = req.body;
