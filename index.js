@@ -23,6 +23,9 @@ async function run() {
     // await client.connect();
     const userCollection = client.db("skillora").collection("users");
     const servicesCollection = client.db("skillora").collection("services");
+    const purchaseServicesCollection = client
+      .db("skillora")
+      .collection("purchaseServices");
 
     // get a single user
     app.get("/user/:uid", async (req, res) => {
@@ -34,8 +37,8 @@ async function run() {
       }
       res.send(user);
     });
-    // get allServices 
-    app.get("/allServices",async(req,res)=>{
+    // get allServices
+    app.get("/allServices", async (req, res) => {
       const query = {};
       const allServices = await servicesCollection.find(query).toArray();
       res.send(allServices);
@@ -46,10 +49,21 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const service = await servicesCollection.findOne(query);
       if (!service) {
-        return res.status(404).send({ message: "Service not found", service: null });
+        return res
+          .status(404)
+          .send({ message: "Service not found", service: null });
       }
       res.send(service);
     });
+    // all purchaseServices by user
+    app.post("/purchaseServices", async (req, res) => {
+      const purchaseService = req.body;
+      const result = await purchaseServicesCollection.insertOne(
+        purchaseService
+      );
+      res.send(result);
+    });
+
     // register user
     app.post("/register", async (req, res) => {
       const userInformation = req.body;
@@ -74,7 +88,7 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-   
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
