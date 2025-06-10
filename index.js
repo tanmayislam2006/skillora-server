@@ -82,6 +82,11 @@ async function run() {
       const result = await userCollection.insertOne(userInformation);
       res.send(result);
     });
+    app.post("/addService", async (req, res) => {
+      const service = req.body;
+      const result = await servicesCollection.insertOne(service);
+      res.send(result);
+    });
     // update user login information
     app.patch("/login", async (req, res) => {
       const { email, lastSignInTime } = req.body;
