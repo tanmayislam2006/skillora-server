@@ -2,7 +2,7 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -22,7 +22,7 @@ async function run() {
   try {
     // await client.connect();
     const userCollection = client.db("skillora").collection("users");
- 
+    const servicesCollection = client.db("skillora").collection("services");
 
     // get a single user
     app.get("/user/:uid", async (req, res) => {
@@ -34,6 +34,13 @@ async function run() {
       }
       res.send(user);
     });
+    // get allServices 
+    app.get("/allServices",async(req,res)=>{
+      const query = {};
+      const allServices = await servicesCollection.find(query).toArray();
+      res.send(allServices);
+    });
+
     // register user
     app.post("/register", async (req, res) => {
       const userInformation = req.body;
