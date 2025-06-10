@@ -55,6 +55,13 @@ async function run() {
       }
       res.send(service);
     });
+    // get a signle purchaseService by user uid
+    app.get("/purchaseService/:uid", async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid: uid };
+      const purchaseServices = await purchaseServicesCollection.find(query).toArray();
+      res.send(purchaseServices);
+    });
     // all purchaseServices by user
     app.post("/purchaseServices", async (req, res) => {
       const purchaseService = req.body;
