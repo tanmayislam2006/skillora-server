@@ -18,6 +18,13 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+const admin = require("firebase-admin");
+
+const serviceAccount = require("./firebaseAdmin.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 async function run() {
   try {
     const userCollection = client.db("skillora").collection("users");
