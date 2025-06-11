@@ -136,6 +136,20 @@ app.get("/customerBooked/:serviceId", async (req, res) => {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+    // update user purches status information
+    app.put("/updateServiceStatus/:id", async (req, res) => {
+      const id = req.params.id;
+      const serviceStatus = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+         ...serviceStatus
+        },
+      };
+      const result = await purchaseServicesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    // delete a service by id 
     app.delete("/deleteService/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
