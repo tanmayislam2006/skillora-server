@@ -68,6 +68,14 @@ async function run() {
       const uid = req.params.uid;
       const query = { uid: uid };
       const userServices = await servicesCollection.find(query).toArray();
+      for (const service of userServices) {
+        const serviceId = service._id;
+        const bookedCount = await purchaseServicesCollection.countDocuments({
+          serviceId: serviceId.toString(),
+        });
+        service.booked = bookedCount;
+      }
+
       res.send(userServices);
     });
     // all purchaseServices by user
