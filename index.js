@@ -38,7 +38,11 @@ async function run() {
     });
     // get allServices
     app.get("/allServices", async (req, res) => {
+      const serviceName= req.query.serviceName;
       const query = {};
+      if (serviceName) {
+        query.name = { $regex: serviceName, $options: "i" };
+      }
       const allServices = await servicesCollection.find(query).toArray();
       res.send(allServices);
     });
