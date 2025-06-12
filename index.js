@@ -122,7 +122,7 @@ app.get("/customerBooked/:serviceId",verifyFirebaseToken, async (req, res) => {
     });
 
     // register user
-    app.post("/register",verifyFirebaseToken, async (req, res) => {
+    app.post("/register", async (req, res) => {
       const userInformation = req.body;
       const { email } = userInformation;
       const query = { email: email };
@@ -152,7 +152,7 @@ app.get("/customerBooked/:serviceId",verifyFirebaseToken, async (req, res) => {
       res.send(result);
     });
     // update user login information
-    app.patch("/login",verifyFirebaseToken, async (req, res) => {
+    app.patch("/login", async (req, res) => {
       const { email, lastSignInTime } = req.body;
       const filter = { email: email };
       const updateDoc = {
