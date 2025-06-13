@@ -1,9 +1,8 @@
-# Skillora Server
+git remote -# Skillora Server
 
 Skillora Server is a Node.js/Express backend for managing users, services, and bookings for a service marketplace platform. It uses MongoDB for data storage and Firebase Admin for authentication.
 
 ## Features
-
 - User registration and login (with Firebase authentication)
 - Add, update, and delete services
 - Search and filter services by name
