@@ -40,7 +40,7 @@ const verifyFirebaseToken = async (req, res, next) => {
     console.error("Error verifying Firebase ID token:", error);
     res.status(401).send({ message: "Unauthorized access" });
   }
-}
+};
 async function run() {
   try {
     const userCollection = client.db("skillora").collection("users");
@@ -50,7 +50,7 @@ async function run() {
       .collection("purchaseServices");
 
     // get a single user
-    app.get("/user/:uid",verifyFirebaseToken, async (req, res) => {
+    app.get("/user/:uid", verifyFirebaseToken, async (req, res) => {
       const uid = req.params.uid;
       const query = { uid: uid };
       const user = await userCollection.findOne(query);
@@ -61,7 +61,7 @@ async function run() {
     });
     // get allServices
     app.get("/allServices", async (req, res) => {
-      const serviceName= req.query.serviceName;
+      const serviceName = req.query.serviceName;
       const query = {};
       if (serviceName) {
         query.name = { $regex: serviceName, $options: "i" };
@@ -70,7 +70,7 @@ async function run() {
       res.send(allServices);
     });
     // get single id
-    app.get("/service/:id",verifyFirebaseToken, async (req, res) => {
+    app.get("/service/:id", verifyFirebaseToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const service = await servicesCollection.findOne(query);
@@ -91,7 +91,7 @@ async function run() {
       res.send(purchaseServices);
     });
     // get a user added service by user uid
-    app.get("/userService/:uid",verifyFirebaseToken, async (req, res) => {
+    app.get("/userService/:uid", verifyFirebaseToken, async (req, res) => {
       const uid = req.params.uid;
       const query = { uid: uid };
       const userServices = await servicesCollection.find(query).toArray();
@@ -105,15 +105,42 @@ async function run() {
 
       res.send(userServices);
     });
-// get all data from purcheaseServicesCollection  by serviceId
-app.get("/customerBooked/:serviceId",verifyFirebaseToken, async (req, res) => {
-  const serviceId = req.params.serviceId;
-  const query = { serviceId: serviceId };
-  const bookings = await purchaseServicesCollection.find(query).toArray();
-  res.send(bookings);
-});
+    // get all data from purcheaseServicesCollection  by serviceId
+    app.get(
+      "/customerBooked/:serviceId",
+      verifyFirebaseToken,
+      async (req, res) => {
+        const serviceId = req.params.serviceId;
+        const query = { serviceId: serviceId };
+        const bookings = await purchaseServicesCollection.find(query).toArray();
+        res.send(bookings);
+      }
+    );
+    app.get("/schedule/:uid",verifyFirebaseToken, async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid: uid };
+      const userServices = await servicesCollection.find(query).toArray();
+      // Convert ObjectId to string for comparison
+      const serviceIds = [
+        ...new Set(userServices.map((service) => service?._id.toString())),
+      ];
+      // set query to search the data from purchaseServicesCollection
+      const scheduleQuery = {
+        serviceId: { $in: serviceIds },
+      };
+      // now get query with date
+      const { serviceDate } = req.query;
+      if (serviceDate) {
+        scheduleQuery.serviceDate = serviceDate;
+      }
+      // Find bookings where serviceId matches any of the user's service IDs and (optionally) the date
+      const myService = await purchaseServicesCollection
+        .find(scheduleQuery)
+        .toArray();
+      res.send(myService);
+    });
     // all purchaseServices by user
-    app.post("/purchaseServices",verifyFirebaseToken, async (req, res) => {
+    app.post("/purchaseServices", verifyFirebaseToken, async (req, res) => {
       const purchaseService = req.body;
       const result = await purchaseServicesCollection.insertOne(
         purchaseService
@@ -133,13 +160,13 @@ app.get("/customerBooked/:serviceId",verifyFirebaseToken, async (req, res) => {
       const result = await userCollection.insertOne(userInformation);
       res.send(result);
     });
-    app.post("/addService",verifyFirebaseToken, async (req, res) => {
+    app.post("/addService", verifyFirebaseToken, async (req, res) => {
       const service = req.body;
       const result = await servicesCollection.insertOne(service);
       res.send(result);
     });
     // ?update service
-    app.put("/updateService/:id",verifyFirebaseToken, async (req, res) => {
+    app.put("/updateService/:id", verifyFirebaseToken, async (req, res) => {
       const id = req.params.id;
       const service = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -164,20 +191,27 @@ app.get("/customerBooked/:serviceId",verifyFirebaseToken, async (req, res) => {
       res.send(result);
     });
     // update user purches status information
-    app.put("/updateServiceStatus/:id",verifyFirebaseToken, async (req, res) => {
-      const id = req.params.id;
-      const serviceStatus = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-         ...serviceStatus
-        },
-      };
-      const result = await purchaseServicesCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
-    // delete a service by id 
-    app.delete("/deleteService/:id",verifyFirebaseToken, async (req, res) => {
+    app.put(
+      "/updateServiceStatus/:id",
+      verifyFirebaseToken,
+      async (req, res) => {
+        const id = req.params.id;
+        const serviceStatus = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: {
+            ...serviceStatus,
+          },
+        };
+        const result = await purchaseServicesCollection.updateOne(
+          filter,
+          updateDoc
+        );
+        res.send(result);
+      }
+    );
+    // delete a service by id
+    app.delete("/deleteService/:id", verifyFirebaseToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await servicesCollection.deleteOne(query);
