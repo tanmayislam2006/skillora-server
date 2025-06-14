@@ -143,6 +143,15 @@ async function run() {
         .toArray();
       res.send(myService);
     });
+    // fetch notification with notification reciver email
+    app.get("/notifications/:email",async(req,res)=>{
+      const email=req.params.email
+      const query={
+        receiverUser:email
+      }
+      const result=await notificationCollection.find(query).toArray()
+      res.send(result)
+    })
     // all purchaseServices by user
     app.post("/purchaseServices", verifyFirebaseToken, async (req, res) => {
       const purchaseService = req.body;
@@ -152,7 +161,7 @@ async function run() {
       res.send(result);
     });
     //post messeage for user in notifications collection 
-    app.post('/notifications',async(req,res)=>{
+    app.post('/notifications',verifyFirebaseToken,async(req,res)=>{
       const notificationInfo=req.body
       const result=await notificationCollection.insertOne(notificationInfo)
       res.send(result)
