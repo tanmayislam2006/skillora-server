@@ -48,6 +48,9 @@ async function run() {
     const purchaseServicesCollection = client
       .db("skillora")
       .collection("purchaseServices");
+    const notificationCollection = client
+      .db("skillora")
+      .collection("notifications");
 
     // get a single user
     app.get("/user/:uid", verifyFirebaseToken, async (req, res) => {
@@ -116,7 +119,8 @@ async function run() {
         res.send(bookings);
       }
     );
-    app.get("/schedule/:uid",verifyFirebaseToken, async (req, res) => {
+    // check today schedule
+    app.get("/schedule/:uid", verifyFirebaseToken, async (req, res) => {
       const uid = req.params.uid;
       const query = { uid: uid };
       const userServices = await servicesCollection.find(query).toArray();
@@ -147,7 +151,12 @@ async function run() {
       );
       res.send(result);
     });
-
+    //post messeage for user in notifications collection 
+    app.post('/notifications',async(req,res)=>{
+      const notificationInfo=req.body
+      const result=await notificationCollection.insertOne(notificationInfo)
+      res.send(result)
+    })
     // register user
     app.post("/register", async (req, res) => {
       const userInformation = req.body;
