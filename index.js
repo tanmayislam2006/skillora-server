@@ -18,6 +18,8 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+const utcDate = new Date("2025-06-14T14:43:54.245Z");
+const bdTime = utcDate.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./firebaseAdmin.json");
@@ -144,14 +146,14 @@ async function run() {
       res.send(myService);
     });
     // fetch notification with notification reciver email
-    app.get("/notifications/:email",async(req,res)=>{
-      const email=req.params.email
-      const query={
-        receiverUser:email
-      }
-      const result=await notificationCollection.find(query).toArray()
-      res.send(result)
-    })
+    app.get("/notifications/:email", verifyFirebaseToken, async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        receiverUser: email,
+      };
+      const result = await notificationCollection.find(query).toArray();
+      res.send(result);
+    });
     // all purchaseServices by user
     app.post("/purchaseServices", verifyFirebaseToken, async (req, res) => {
       const purchaseService = req.body;
@@ -160,12 +162,12 @@ async function run() {
       );
       res.send(result);
     });
-    //post messeage for user in notifications collection 
-    app.post('/notifications',verifyFirebaseToken,async(req,res)=>{
-      const notificationInfo=req.body
-      const result=await notificationCollection.insertOne(notificationInfo)
-      res.send(result)
-    })
+    //post messeage for user in notifications collection
+    app.post("/notifications", verifyFirebaseToken, async (req, res) => {
+      const notificationInfo = req.body;
+      const result = await notificationCollection.insertOne(notificationInfo);
+      res.send(result);
+    });
     // register user
     app.post("/register", async (req, res) => {
       const userInformation = req.body;
@@ -214,17 +216,33 @@ async function run() {
       verifyFirebaseToken,
       async (req, res) => {
         const id = req.params.id;
-        const serviceStatus = req.body;
+        const { serviceStatus, senderUser } = req.body;
+
         const filter = { _id: new ObjectId(id) };
         const updateDoc = {
           $set: {
-            ...serviceStatus,
+            serviceStatus,
           },
         };
         const result = await purchaseServicesCollection.updateOne(
           filter,
           updateDoc
         );
+        if (result.modifiedCount) {
+          const userPurchesInfo = await purchaseServicesCollection.findOne(
+            filter
+          );
+          if (userPurchesInfo) {
+            const notificationData = {
+              receiverUser: userPurchesInfo.userEmail,
+              senderUser,
+              type: "status",
+              message: `Service status updated to ${serviceStatus} `,
+              time: bdTime,
+            };
+            await notificationCollection.insertOne(notificationData);
+          }
+        }
         res.send(result);
       }
     );
@@ -248,5 +266,6 @@ async function run() {
 run().catch(console.dir);
 
 app.listen(port, () => {
-  console.log(`Server is running on port http://localhost:${port}`);
+  const time = new Date().toLocaleTimeString();
+  console.log(`Server is running on ${time} port http://localhost:${port}`);
 });
