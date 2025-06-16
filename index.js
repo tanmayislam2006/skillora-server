@@ -18,8 +18,8 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
-const utcDate = new Date("2025-06-14T14:43:54.245Z");
-const bdTime = utcDate.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
+const utcDate = new Date();
+const bdTime = utcDate.toLocaleString("en-CA", { timeZone: "Asia/Dhaka" });
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./firebaseAdmin.json");
